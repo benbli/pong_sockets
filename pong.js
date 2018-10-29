@@ -51,12 +51,15 @@ class Pong {
     this._canvas = canvas;
     this._context = canvas.getContext('2d');
 
+    this._accumulator = 0;
+    this.step = 1 / 120;
+
     this.ball = new Ball();
 
     this.players = [new Player(), new Player()];
 
-    this.players[0].pos.x = 40;
-    this.players[1].pos.x = this._canvas.width - 40;
+    this.players[0].pos.x = 200;
+    this.players[1].pos.x = this._canvas.width - 200;
     this.players.forEach(player => {
       player.pos.y = this._canvas.height / 2;
     });
@@ -66,6 +69,7 @@ class Pong {
     const callback = millis => {
       if (lastTime) {
         this.update((millis - lastTime) / 1000);
+        this.draw();
       }
       lastTime = millis;
       requestAnimationFrame(callback);
@@ -170,7 +174,7 @@ class Pong {
     }
   }
 
-  update(dt) {
+  simulate(dt) {
     this.ball.pos.x += this.ball.vel.x * dt;
     this.ball.pos.y += this.ball.vel.y * dt;
 
@@ -188,8 +192,14 @@ class Pong {
     this.players.forEach(player => {
       this.collide(player, this.ball);
     });
+  }
 
-    this.draw();
+  update(dt) {
+    this._accumulator += dt;
+    while (this._accumulator > this.step) {
+      this.simulate(this.step);
+      this._accumulator -= this.step;
+    }
   }
 }
 
